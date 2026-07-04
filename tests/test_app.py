@@ -4,18 +4,24 @@ from src import app as app_module
 
 
 def test_duplicate_signup_is_rejected():
-    original_participants = app_module.activities["Chess Club"]["participants"]
-    app_module.activities["Chess Club"]["participants"] = ["existing@example.com"]
+    # Arrange
+    activity_name = "Chess Club"
+    email = "existing@example.com"
+    original_participants = app_module.activities[activity_name]["participants"]
+    app_module.activities[activity_name]["participants"] = [email]
 
     try:
         client = TestClient(app_module.app)
+
+        # Act
         response = client.post(
-            "/activities/Chess%20Club/signup",
-            params={"email": "existing@example.com"},
+            f"/activities/{activity_name}/signup",
+            params={"email": email},
         )
 
+        # Assert
         assert response.status_code == 400
-        assert response.json() == {"detail": "Student already signed up"}
-        assert app_module.activities["Chess Club"]["participants"] == ["existing@example.com"]
+        assert response.json() == {"detail": "Student already signed up for this activity"}
+        assert app_module.activities[activity_name]["participants"] == [email]
     finally:
-        app_module.activities["Chess Club"]["participants"] = original_participants
+        app_module.activities[activity_name]["participants"] = original_participants
